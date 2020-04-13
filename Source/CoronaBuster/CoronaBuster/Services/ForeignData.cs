@@ -39,26 +39,30 @@ namespace CoronaBuster.Services {
             lock (_lock) {
                 _file.Close();
 
-                var keepers = ReadAllValidForeignRecords().ToList();
+                // TODO: this reads all foreign records into memory. Change it to stream the data.
+                List<ForeignRecord> keepersList;
+                using (var _ = ReadAllValidForeignRecords(out var keepers)) keepersList = keepers.ToList();
 
                 _file = Xamarin.Forms.DependencyService.Get<IFileIO>().OpenWrite(nameof(ForeignData), true);
 
-                foreach (var r in keepers) {
+                foreach (var r in keepersList) {
                     ProtoBuf.Serializer.SerializeWithLengthPrefix(_file, r, ProtoBuf.PrefixStyle.Base128, 0);
                 }
+                
 
                 _file.Flush();
             }
         }
 
-        public static IEnumerable<ForeignRecord> ReadAllValidForeignRecords() {
+        public static IDisposable ReadAllValidForeignRecords(out IEnumerable<ForeignRecord> foreignRecords) {
             lock (_lock) {
-                var readFile = Xamarin.Forms.DependencyService.Get<IFileIO>().OpenRead(nameof(ForeignData)); // new FileStream(nameof(ForeignData), FileMode.Open, FileAccess.Read, FileShare.Read);
+                var readFile = Xamarin.Forms.DependencyService.Get<IFileIO>().OpenRead(nameof(ForeignData));
 
                 var now = Helpers.GetExactTime();
-                var foreignRecords = ProtoBuf.Serializer.DeserializeItems<ForeignRecord>(readFile, ProtoBuf.PrefixStyle.Base128, 0)
+                foreignRecords = ProtoBuf.Serializer.DeserializeItems<ForeignRecord>(readFile, ProtoBuf.PrefixStyle.Base128, 0)
                                         .Where(r => (now - r.ScanTime) < ForeignData.MEMORY_SPAN);
-                return foreignRecords;
+
+                return readFile;
             }
         }
 

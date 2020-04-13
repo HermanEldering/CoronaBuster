@@ -41,7 +41,7 @@ namespace CoronaBuster.ViewModels {
                     ReportDate = a,
                     Duration = TimeSpan.FromSeconds(b.Sum(x => x.PublicData.DurationSeconds)),
                     RiskFactor = b.Max(x => x.Distance),
-                    Dates = b.Select(x => Helpers.ToDateTime(x.LocalData.Time)).Distinct().OrderBy(x => x).ToList(), // TODO: add duration per time bin
+                    Contacts = b.Select(x => Helpers.ToDateTime(x.LocalData.Time)).OrderBy(x => x).ToList(), // TODO: add duration per time bin
                 });
                 foreach (var item in items) {
                     Items.Add(item);

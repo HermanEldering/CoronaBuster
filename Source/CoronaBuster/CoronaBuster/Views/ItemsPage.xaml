@@ -50,7 +50,7 @@
                                 
                                 <Label 
                                     Grid.ColumnSpan="2"
-                                    Text="{Binding ReportDate}" 
+                                    Text="{Binding ReportDate, StringFormat='{0}'}" 
                                     LineBreakMode="NoWrap" 
                                     Style="{DynamicResource ListItemTextStyle}" 
                                     FontSize="16"
@@ -63,7 +63,7 @@
                                     Style="{DynamicResource ListItemDetailTextStyle}"
                                     FontSize="13" />
                                 <Label Grid.Row="1" Grid.Column="1"
-                                    Text="{Binding Dates.Count, StringFormat='{0}'}" 
+                                    Text="{Binding Contacts.Count, StringFormat='{0}'}" 
                                        Margin="0"
                                     d:Text="Item description"
                                     LineBreakMode="NoWrap"

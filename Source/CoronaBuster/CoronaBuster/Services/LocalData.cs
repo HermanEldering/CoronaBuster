@@ -14,6 +14,7 @@ namespace CoronaBuster.Services {
         public Dictionary<uint, List<LocalRecord>> LocalKeyLookup { get; private set; } = new Dictionary<uint, List<LocalRecord>>();
 
         private System.IO.Stream _file;
+        private readonly object _lock = new object();
 
         public LocalData() {
             _file = Xamarin.Forms.DependencyService.Get<IFileIO>().OpenWrite(nameof(LocalData));
@@ -25,12 +26,16 @@ namespace CoronaBuster.Services {
         }
 
         public void StoreLocalKey(uint id, byte[] privateKey) {
-            // maintain a list sorted by time
+            
             var item = new LocalRecord(id, privateKey, Helpers.GetApproximateHour());
-            LocalKeys.Add(item);
 
-            // also store a reference in a lookup table
-            AddToLookup(item);
+            lock (_lock) {
+                // maintain a list sorted by time
+                LocalKeys.Add(item);
+
+                // also store a reference in a lookup table
+                AddToLookup(item);
+            }
 
             // and write to permanent storage
             ProtoBuf.Serializer.SerializeWithLengthPrefix(_file, item, ProtoBuf.PrefixStyle.Base128, 0);
@@ -46,24 +51,30 @@ namespace CoronaBuster.Services {
         }
 
         public void Prune() {
-            // find first relevant key
-            var cutoff = Helpers.GetExactTime() - MEMORY_SPAN;
-            int i = 0;
-            for (; i < LocalKeys.Count; i++) {
-                if (LocalKeys[i].Time > cutoff) break;
+            lock (_lock) {
+                // find first relevant key
+                var cutoff = Helpers.GetExactTime() - MEMORY_SPAN;
+                int i = 0;
+                for (; i < LocalKeys.Count; i++) {
+                    if (LocalKeys[i].Time > cutoff) break;
 
-                // remove old keys from lookup table
-                if (LocalKeyLookup.TryGetValue(LocalKeys[i].Id, out var keys)) {
-                    keys.Remove(LocalKeys[i]);
+                    // remove old keys from lookup table
+                    if (LocalKeyLookup.TryGetValue(LocalKeys[i].Id, out var keys)) {
+                        keys.Remove(LocalKeys[i]);
+                    }
+                }
+
+                if (i != 0) {
+                    // remove keys by replacing entire list, since removing many items from original list will need many copies
+                    var newList = new List<LocalRecord>(LocalKeys.Count - i);
+                    newList.AddRange(LocalKeys.Skip(i));
+                    LocalKeys = newList;
                 }
             }
+        }
 
-            if (i != 0) {
-                // remove keys by replacing entire list, since removing many items from original list will need many copies
-                var newList = new List<LocalRecord>(LocalKeys.Count - i);
-                newList.AddRange(LocalKeys.Skip(i));
-                LocalKeys = newList;
-            }
+        public List<uint> GetIds() {
+            lock (_lock) return LocalKeyLookup.Keys.ToList();
         }
     }
 }

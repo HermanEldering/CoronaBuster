@@ -13,13 +13,16 @@ namespace CoronaBuster.Services {
         private HttpClient _client = new HttpClient();
 
         public async Task<bool> Report() {
-            IEnumerable<ForeignRecord> foreignRecords = ForeignData.ReadAllValidForeignRecords();
+            // TODO: this has issue with locking
+            using (var _ = ForeignData.ReadAllValidForeignRecords(out var foreignRecords)) {
 
-            var publicRecords = foreignRecords
-                                    .Select(r => new PublicRecordBase(r))
-                                    .ToArray();
+                // TODO: ToArray call loads entire file into memory
+                var publicRecords = foreignRecords
+                                        .Select(r => new PublicRecordBase(r))
+                                        .ToArray();
 
-            return await Upload(publicRecords);
+                return await Upload(publicRecords);
+            }
         }
 
         private async Task<bool> Upload(PublicRecordBase[] publicRecords) {

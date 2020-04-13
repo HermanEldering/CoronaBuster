@@ -53,7 +53,8 @@ namespace CoronaBuster.Services {
 
             try {
                 var newHits = 0;
-                foreach (var id in _localData.LocalKeyLookup.Keys) {
+
+                foreach (var id in _localData.GetIds()) {
                     var publicRecords = await Download(id);
                     var contacts = FindContacts(publicRecords).ToList();
                     if (publicRecords.Any()) _lastPublicationTime[id] = publicRecords.Max(r => r.PublicationDate.Ticks); // store time so that we don't need to download the older records again

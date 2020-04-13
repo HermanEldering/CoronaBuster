@@ -31,7 +31,7 @@ namespace CoronaBuster.ViewModels {
         }
 
         public AboutViewModel() {
-            Title = "About";
+            Title = "Status";
             OpenWebCommand = new Command(async () => await Browser.OpenAsync("https://xamarin.com"));
 
             AdvertiseCommand = new Command(Buster.Advertise);

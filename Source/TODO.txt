@@ -7,3 +7,4 @@
 - Delete all files when app is disabled.
 
 - Check if bluetooth is enabled
+- Wait with download until on wifi
