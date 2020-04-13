@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using CoronaBuster.Models;
+
 using static System.Math;
 
 namespace CoronaBuster.Services {
@@ -13,10 +13,10 @@ namespace CoronaBuster.Services {
         public List<LocalRecord> LocalKeys { get; private set; } = new List<LocalRecord>();
         public Dictionary<uint, List<LocalRecord>> LocalKeyLookup { get; private set; } = new Dictionary<uint, List<LocalRecord>>();
 
-        private Stream _file;
+        private System.IO.Stream _file;
 
         public LocalData() {
-            _file = File.OpenWrite(nameof(LocalData));
+            _file = Xamarin.Forms.DependencyService.Get<IFileIO>().OpenWrite(nameof(LocalData));
 
             foreach (var item in ProtoBuf.Serializer.DeserializeItems<LocalRecord>(_file, ProtoBuf.PrefixStyle.Base128, 0)) {
                 LocalKeys.Add(item);

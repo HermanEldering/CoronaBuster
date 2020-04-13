@@ -13,7 +13,7 @@ using Android.Views;
 using Android.Widget;
 
 namespace CoronaBuster.Droid {
-    class BusterBluetoothAndroid: Services.IBusterBluetooth {
+    class BusterBluetoothAndroid: CoronaBuster.Services.IBusterBluetooth {
         const byte VERSION_NUMBER = 1;
 
         public event Action<byte[], uint, int, int> KeyReceived;
@@ -52,9 +52,10 @@ namespace CoronaBuster.Droid {
         private void BetterHandler(BluetoothDevice device, int rssi, byte[] packet) {
             var offset = (BluetoothImpl.KEY_LENGTH_1 - 20); // correction for change in key length
 
+            // TODO: make processing of packet more resilient
             if (CheckManufacturerId(packet, 4) 
                 && CheckManufacturerId(packet, 32 + offset)
-                && packet[7] == 1) {
+                && (packet[7] & 0x0F) == 1) {
 
                 var key = new byte[BluetoothImpl.KEY_LENGTH];
                 Array.Copy(packet, 8, key, 0, BluetoothImpl.KEY_LENGTH_1);

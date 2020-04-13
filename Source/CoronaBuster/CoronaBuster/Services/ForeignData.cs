@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using CoronaBuster.Models;
@@ -13,13 +12,12 @@ namespace CoronaBuster.Services {
         public List<ForeignRecord> Records { get; private set; } = new List<ForeignRecord>();
         public Dictionary<(uint, string), ForeignRecord> Lookup { get; private set; } = new Dictionary<(uint, string), ForeignRecord>();
 
-        private Stream _file;
+        private System.IO.Stream _file;
         private static readonly object _lock = new object();
 
         public ForeignData() {
-            _file = new FileStream(nameof(ForeignData), FileMode.Append, FileAccess.Write, FileShare.Read);
-
             // don't need to read from the file here
+            _file = Xamarin.Forms.DependencyService.Get<IFileIO>().OpenAppend(nameof(ForeignData));
         }
 
         public void PersistData() {
@@ -42,18 +40,20 @@ namespace CoronaBuster.Services {
                 _file.Close();
 
                 var keepers = ReadAllValidForeignRecords().ToList();
-                
-                _file = new FileStream(nameof(ForeignData), FileMode.Open | FileMode.Truncate, FileAccess.Write, FileShare.Read);
+
+                _file = Xamarin.Forms.DependencyService.Get<IFileIO>().OpenWrite(nameof(ForeignData), true);
 
                 foreach (var r in keepers) {
                     ProtoBuf.Serializer.SerializeWithLengthPrefix(_file, r, ProtoBuf.PrefixStyle.Base128, 0);
                 }
+
+                _file.Flush();
             }
         }
 
         public static IEnumerable<ForeignRecord> ReadAllValidForeignRecords() {
             lock (_lock) {
-                var readFile = new FileStream(nameof(ForeignData), FileMode.Open, FileAccess.Read, FileShare.Read);
+                var readFile = Xamarin.Forms.DependencyService.Get<IFileIO>().OpenRead(nameof(ForeignData)); // new FileStream(nameof(ForeignData), FileMode.Open, FileAccess.Read, FileShare.Read);
 
                 var now = Helpers.GetExactTime();
                 var foreignRecords = ProtoBuf.Serializer.DeserializeItems<ForeignRecord>(readFile, ProtoBuf.PrefixStyle.Base128, 0)

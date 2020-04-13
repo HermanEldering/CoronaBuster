@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using ProtoBuf;
 using static System.Math;
 
 namespace CoronaBuster.Models {
+
+    [ProtoContract(SkipConstructor =true)]
     public class Contact: ModelBase {
-        public PublicRecord PublicData { get; private set; }
-        public LocalRecord LocalData { get; private set; }
+        [ProtoMember(1)] public PublicRecord PublicData { get; private set; }
+        [ProtoMember(2)] public LocalRecord LocalData { get; private set; }
 
         bool _read;
         public bool Read { 

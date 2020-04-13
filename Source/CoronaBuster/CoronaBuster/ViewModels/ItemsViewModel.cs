@@ -17,7 +17,7 @@ namespace CoronaBuster.ViewModels {
 
         public ItemsViewModel() {
             Title = "Infection reports";
-            DataStore.Hits.CollectionChanged += Hits_CollectionChanged;
+            DataStore.Contacts.CollectionChanged += Hits_CollectionChanged;
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
             //MessagingCenter.Subscribe<NewItemPage, Item>(this, "AddItem", async (obj, item) => {
@@ -37,7 +37,7 @@ namespace CoronaBuster.ViewModels {
 
             try {
                 Items.Clear();
-                var items = DataStore.Hits.GroupBy(x => x.PublicationDate, x => x, (a, b) => new ItemDetailViewModel {
+                var items = DataStore.Contacts.GroupBy(x => x.PublicationDate, x => x, (a, b) => new ItemDetailViewModel {
                     ReportDate = a,
                     Duration = TimeSpan.FromSeconds(b.Sum(x => x.PublicData.DurationSeconds)),
                     RiskFactor = b.Max(x => x.Distance),

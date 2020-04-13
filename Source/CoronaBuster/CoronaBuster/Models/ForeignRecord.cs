@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ProtoBuf;
 
 namespace CoronaBuster.Models {
 
+    [ProtoContract(SkipConstructor = true)]
     public class ForeignRecord: PublicRecordBase {
-        public TimeSpan ScanTime { get; private set; }
-        public TimeSpan LastTime {
+        [ProtoMember(100)] public TimeSpan ScanTime { get; private set; }
+        [ProtoIgnore] public TimeSpan LastTime {
             get => ScanTime + TimeSpan.FromSeconds(DurationSeconds);
             set => DurationSeconds = (int)(value - ScanTime).TotalSeconds;
         }

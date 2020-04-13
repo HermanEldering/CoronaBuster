@@ -2,20 +2,30 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using CoronaBuster.Models;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace CoronaBuster.Services {
     public class ContactData {
-        public ObservableCollection<Models.Contact> Hits { get; private set; } = new ObservableCollection<Models.Contact>();
+        public ObservableCollection<Contact> Contacts { get; private set; } = new ObservableCollection<Contact>();
 
         private PublicData _publicData = DependencyService.Get<PublicData>();
 
+        private System.IO.Stream _stream;
+
         public ContactData() {
-            _publicData.HitFound += HitFound;
+            _stream = DependencyService.Get<IFileIO>().OpenWrite(nameof(ContactData));
+            ProtoBuf.Serializer.DeserializeItems<Contact>(_stream, ProtoBuf.PrefixStyle.Base128, 0).ForEach(c => Contacts.Add(c));
+             
+            _publicData.ContactFound += ContactFound;
         }
 
-        private void HitFound(Models.Contact hit) {
-            Hits.Add(hit);
+        private void ContactFound(Contact contact) {
+            ProtoBuf.Serializer.SerializeWithLengthPrefix(_stream, contact, ProtoBuf.PrefixStyle.Base128, 0);
+            _stream.Flush();
+
+            Contacts.Add(contact);
         }
     }
 }

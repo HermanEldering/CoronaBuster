@@ -17,7 +17,7 @@ namespace CoronaBuster.ViewModels {
 
         public TestViewModel() {
             Title = "Connections";
-            DataStore.Hits.CollectionChanged += Hits_CollectionChanged;
+            DataStore.Contacts.CollectionChanged += Hits_CollectionChanged;
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
             //MessagingCenter.Subscribe<NewItemPage, Item>(this, "AddItem", async (obj, item) => {
@@ -37,7 +37,7 @@ namespace CoronaBuster.ViewModels {
 
             try {
                 Items.Clear();
-                var items = DataStore.Hits.OrderByDescending(x => x.PublicationDate);
+                var items = DataStore.Contacts.OrderByDescending(x => x.PublicationDate);
                 foreach (var item in items) {
                     Items.Add(item);
                 }

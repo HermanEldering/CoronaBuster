@@ -19,7 +19,7 @@ namespace CoronaBuster.Droid
 
             base.OnCreate(savedInstanceState);
 
-            Xamarin.Forms.DependencyService.Register<Services.IBusterBluetooth, BusterBluetoothAndroid>();
+            Xamarin.Forms.DependencyService.Register<CoronaBuster.Services.IBusterBluetooth, BusterBluetoothAndroid>();
 
             global::Xamarin.Forms.Forms.SetFlags("CollectionView_Experimental");
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);

@@ -13,6 +13,7 @@ namespace CoronaBuster {
 
             InitializeComponent();
 
+            DependencyService.Register<IFileIO, GenericFileIO>();
             DependencyService.Register<Buster>();
             DependencyService.Register<LocalData>();
             DependencyService.Register<ForeignData>();

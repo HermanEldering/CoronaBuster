@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using Org.BouncyCastle.Security;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace CoronaBuster.Services {
     public class Buster: ViewModels.BaseViewModel {
-        public static readonly TimeSpan KEY_REGENERATION_INTERVAL = TimeSpan.FromMinutes(2);
+        public static readonly TimeSpan KEY_REGENERATION_INTERVAL = TimeSpan.FromMinutes(0.5);
         public static readonly TimeSpan LONG_INTERVAL = TimeSpan.FromHours(2);
 
         public static SecureRandom Random { get; } = new SecureRandom();
@@ -28,6 +29,7 @@ namespace CoronaBuster.Services {
             get => _isScanning;
             set => SetProperty(ref _isScanning, value);
         }
+        public PermissionStatus PermissionStatus { get; private set; }
 
         IBusterBluetooth Bluetooth = DependencyService.Get<IBusterBluetooth>();
         LocalData _localData = DependencyService.Get<LocalData>();
@@ -49,6 +51,8 @@ namespace CoronaBuster.Services {
             try {
                 _foreignData.PersistData();
 
+                RequestPermissions(); // make sure that we have the permissions to use bluetooth
+
                 Scan();
                 Advertise();
             } catch (Exception err) {
@@ -56,6 +60,7 @@ namespace CoronaBuster.Services {
             }
             return true;
         }
+
         private bool LongTick() {
             try {
                 _foreignData.PrunePersistedData();
@@ -64,6 +69,14 @@ namespace CoronaBuster.Services {
                 //TODO: show/log exception
             }
             return true;
+        }
+
+        private async void RequestPermissions() {
+            PermissionStatus = await Permissions.CheckStatusAsync<Permissions.LocationAlways>();
+            if (PermissionStatus != PermissionStatus.Granted) {
+                PermissionStatus = await Permissions.RequestAsync<Permissions.LocationAlways>();
+                if (PermissionStatus == PermissionStatus.Granted) ShortTick(); // retry immediately
+            }
         }
 
         private void StartedAdvertising(byte[] publicKey, uint id) => AdvertisedKey = $"@{DateTime.Now}: {Convert.ToBase64String(publicKey)}";

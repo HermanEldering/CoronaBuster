@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -11,7 +10,6 @@ using Xamarin.Forms;
 
 namespace CoronaBuster.Services {
     class InfectionReporter {
-        private ForeignData _foreignData = DependencyService.Get<ForeignData>();
         private HttpClient _client = new HttpClient();
 
         public async Task<bool> Report() {

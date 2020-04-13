@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ProtoBuf;
 
 namespace CoronaBuster.Models {
 
+    [ProtoContract(SkipConstructor =true)]
     public class LocalRecord {
-        public uint Id { get; private set; }
-        public byte[] PrivateKey { get; private set; }
-        public TimeSpan Time { get; private set; }
-        public TimeSpan TimeOfDay => Time - TimeSpan.FromDays((int)Time.TotalDays);
+        [ProtoMember(1)] public uint Id { get; private set; }
+        [ProtoMember(2)] public byte[] PrivateKey { get; private set; }
+        [ProtoMember(3)] public TimeSpan Time { get; private set; }
+        [ProtoIgnore] public TimeSpan TimeOfDay => Time - TimeSpan.FromDays((int)Time.TotalDays);
+
 
         public LocalRecord(uint id, byte[] privateKey, TimeSpan time) {
             Id = id;
