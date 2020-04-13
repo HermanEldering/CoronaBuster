@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="CoronaBuster.Views.TestDetailPage"
+             Title="{Binding Title}">
+
+    <StackLayout Spacing="20" Padding="15">
+        <Label Text="When was other person tested:" FontSize="Medium" />
+        <Label Text="{Binding Item.PublicationDate}" d:Text="Publication time" FontSize="Small"/>
+        <Label Text="When did I meet the infected person:" FontSize="Medium" />
+        <Label Text="{Binding Item.MeetingTime}" d:Text="Meeting time" FontSize="Small"/>
+        <Label Text="How long was I near the person:" FontSize="Medium" />
+        <Label Text="{Binding Item.Duration}" d:Text="Public data" FontSize="Small"/>
+        <Label Text="Distance risk factor:" FontSize="Medium" />
+        <Label Text="{Binding Item.Distance}" d:Text="Public data" FontSize="Small"/>
+        <Label Text="Pathloss:" FontSize="Medium" />
+        <Label Text="{Binding Item.PathLoss}" d:Text="Public data" FontSize="Small"/>
+        <Label Text="Local data:" FontSize="Medium" />
+        <Label Text="{Binding Item.LocalData, StringFormat='{0}'}" d:Text="Local data" FontSize="Small"/>
+        <Label Text="Public data:" FontSize="Medium" />
+        <Label Text="{Binding Item.PublicData, StringFormat='{0}'}" d:Text="Public data" FontSize="Small"/>
+    </StackLayout>
+    
+</ContentPage>
