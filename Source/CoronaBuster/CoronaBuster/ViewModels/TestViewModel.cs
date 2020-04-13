@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace CoronaBuster.ViewModels {
     public class TestViewModel: BaseViewModel {
-        public ObservableCollection<Hit> Items { get; } = new ObservableCollection<Hit>();
+        public ObservableCollection<Contact> Items { get; } = new ObservableCollection<Contact>();
         public Command LoadItemsCommand { get; set; }
 
         public TestViewModel() {

@@ -17,11 +17,11 @@ namespace CoronaBuster {
             DependencyService.Register<LocalData>();
             DependencyService.Register<ForeignData>();
             DependencyService.Register<PublicData>();
-            DependencyService.Register<HitsData>();
+            DependencyService.Register<ContactData>();
             DependencyService.Register<InfectionReporter>();
 
             // make sure these are initialized when the app is started:
-            DependencyService.Get<HitsData>(); 
+            DependencyService.Get<ContactData>(); 
             DependencyService.Get<Buster>();
 
             MainPage = new AppShell();

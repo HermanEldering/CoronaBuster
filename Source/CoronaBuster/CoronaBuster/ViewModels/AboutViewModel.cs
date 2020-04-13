@@ -36,7 +36,7 @@ namespace CoronaBuster.ViewModels {
 
             AdvertiseCommand = new Command(Buster.Advertise);
             ScanCommand = new Command(Buster.Scan);
-            UploadCommand = new Command(async () => UploadStatus = await Uploader.Upload() ? $"Upload success @{DateTime.Now.TimeOfDay}" : $"Upload failed @{DateTime.Now.TimeOfDay}");
+            UploadCommand = new Command(async () => UploadStatus = await Uploader.Report() ? $"Upload success @{DateTime.Now.TimeOfDay}" : $"Upload failed @{DateTime.Now.TimeOfDay}");
             DownloadCommand = new Command(Download, () => !IsDownloading); 
         }
 

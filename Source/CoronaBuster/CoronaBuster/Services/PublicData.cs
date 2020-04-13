@@ -13,35 +13,49 @@ namespace CoronaBuster.Services {
     public class PublicData {
         LocalData _localData = DependencyService.Get<LocalData>();
 
-        List<(PublicRecord, LocalData.LocalKey)> _hits = new List<(PublicRecord, LocalData.LocalKey)>();
         HttpClient _client = new HttpClient();
 
         Dictionary<uint, long> _lastPublicationTime = new Dictionary<uint, long>();
 
-        public event Action<Hit> HitFound;
+        public event Action<Contact> HitFound;
 
-        //public PublicData(LocalData localData) {
-        //    _localData = localData;
-        //}
+        public PublicData() {
+            try {
+                using (var file = System.IO.File.OpenRead(nameof(PublicData))) {
+                    _lastPublicationTime = ProtoBuf.Serializer.DeserializeWithLengthPrefix<Dictionary<uint, long>>(file, ProtoBuf.PrefixStyle.Base128, 0);
+                }
+            } catch (Exception err) {
+                // if we can't read from the file just assume we need to download everthing.
+                // TODO: log exception just to be sure
+            }
+        }
 
-        public IEnumerable<(PublicRecord, LocalData.LocalKey)> FindHits(IEnumerable<PublicRecord> data) {
+        public IEnumerable<(PublicRecord publicRecord, LocalRecord localRecord)> FindHits(IEnumerable<PublicRecord> data) {
             return data
                 .SelectMany(r => _localData.LocalKeyLookup[r.Id]
                 .Where(lk => IsMatch(r, lk))
                 .Select(lk => (r, lk)));
         }
 
-        private static bool IsMatch(PublicRecord r, LocalData.LocalKey lk) => Crypto.Hash(Crypto.GetSharedSecret(lk.PrivateKey, Convert.FromBase64String(r.PublicKey)), r.Id) == r.SharedSecret;
+        private static bool IsMatch(PublicRecord r, LocalRecord lk) => Crypto.Hash(Crypto.GetSharedSecret(lk.PrivateKey, Convert.FromBase64String(r.PublicKey)), r.Id) == r.SharedSecret;
 
         public async Task<int> DownloadAndCheck() {
             var newHits = 0;
             foreach (var id in _localData.LocalKeyLookup.Keys) {
                 var publicRecords = await Download(id);
                 var hits = FindHits(publicRecords).ToList();
-                _hits.AddRange(hits); // each public record should be downloaded only once, so this should not store duplicates
                 if (publicRecords.Any()) _lastPublicationTime[id] = publicRecords.Max(r => r.PublicationDate.Ticks); // store time so that we don't need to download the older records again
                 newHits += hits.Count;
-                hits.ForEach(h => HitFound?.Invoke(new Hit(h.Item1, h.Item2)));
+                hits.ForEach(h => HitFound?.Invoke(new Contact(h.publicRecord, h.localRecord)));
+            }
+
+            try {
+                using (var file = System.IO.File.OpenWrite(nameof(PublicData))) {
+                    ProtoBuf.Serializer.SerializeWithLengthPrefix(file, _lastPublicationTime, ProtoBuf.PrefixStyle.Base128, 0);
+                }
+            } catch (Exception err) {
+                // if we can't write to the file just assume we need to download it again next time.
+                // TODO: log exception and inform user
             }
 
             return newHits;

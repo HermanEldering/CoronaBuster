@@ -5,9 +5,9 @@ using System.Text;
 using static System.Math;
 
 namespace CoronaBuster.Models {
-    public class Hit: ModelBase {
+    public class Contact: ModelBase {
         public PublicRecord PublicData { get; private set; }
-        public Services.LocalData.LocalKey LocalData { get; private set; }
+        public LocalRecord LocalData { get; private set; }
 
         bool _read;
         public bool Read { 
@@ -21,7 +21,7 @@ namespace CoronaBuster.Models {
         public int PathLoss => PublicData.MinimumPathLoss;
         public float Distance => 100f / PublicData.MinimumPathLoss;
 
-        public Hit(PublicRecord publicRecord, Services.LocalData.LocalKey localRecord) {
+        public Contact(PublicRecord publicRecord, LocalRecord localRecord) {
             PublicData = publicRecord;
             LocalData = localRecord;
         }

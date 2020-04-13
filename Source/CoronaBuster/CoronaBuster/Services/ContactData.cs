@@ -5,17 +5,16 @@ using System.Text;
 using Xamarin.Forms;
 
 namespace CoronaBuster.Services {
-    public class HitsData {
-        public ObservableCollection<Models.Hit> Hits { get; private set; } = new ObservableCollection<Models.Hit>();
+    public class ContactData {
+        public ObservableCollection<Models.Contact> Hits { get; private set; } = new ObservableCollection<Models.Contact>();
 
         private PublicData _publicData = DependencyService.Get<PublicData>();
 
-        //public HitsData(PublicData publicData) {
-        public HitsData() {
+        public ContactData() {
             _publicData.HitFound += HitFound;
         }
 
-        private void HitFound(Models.Hit hit) {
+        private void HitFound(Models.Contact hit) {
             Hits.Add(hit);
         }
     }

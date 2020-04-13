@@ -10,7 +10,7 @@ using CoronaBuster.Services;
 
 namespace CoronaBuster.ViewModels {
     public class BaseViewModel: INotifyPropertyChanged {
-        public HitsData DataStore => DependencyService.Get<HitsData>();
+        public ContactData DataStore => DependencyService.Get<ContactData>();
 
         bool isBusy = false;
         public bool IsBusy {

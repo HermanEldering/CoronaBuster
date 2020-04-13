@@ -1,0 +1,9 @@
+- Encrypt data stored in files.
+- Prevent out of disk space errors. (pre-allocate files?)
+
+- Disable app when foreign records are uploaded to the server.
+- Add remote kill switch to disable app on all devices.
+- Stop scanning & transmitting when app is disabled.
+- Delete all files when app is disabled.
+
+- Check if bluetooth is enabled

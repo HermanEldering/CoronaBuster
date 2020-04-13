@@ -6,6 +6,9 @@ using Xamarin.Forms;
 
 namespace CoronaBuster.Services {
     public class Buster: ViewModels.BaseViewModel {
+        public static readonly TimeSpan KEY_REGENERATION_INTERVAL = TimeSpan.FromMinutes(2);
+        public static readonly TimeSpan LONG_INTERVAL = TimeSpan.FromHours(2);
+
         public static SecureRandom Random { get; } = new SecureRandom();
 
         private string _advertisedKey;
@@ -30,24 +33,33 @@ namespace CoronaBuster.Services {
         LocalData _localData = DependencyService.Get<LocalData>();
         ForeignData _foreignData = DependencyService.Get<ForeignData>();
 
-        (byte[] publicKey, byte[] privateKey) _pair;
+        //(byte[] publicKey, byte[] privateKey) _pair;
 
         public Buster() {
             Bluetooth.KeyReceived += KeyReceived;
             Bluetooth.Advertising += StartedAdvertising;
 
-            TimerTick();
+            ShortTick();
 
-            Device.StartTimer(TimeSpan.FromMinutes(2), TimerTick);
+            Device.StartTimer(KEY_REGENERATION_INTERVAL, ShortTick);
+            Device.StartTimer(LONG_INTERVAL, LongTick);
         }
 
-        private bool TimerTick() {
+        private bool ShortTick() {
             try {
-                _pair = Crypto.GenerateKeyPair();
+                _foreignData.PersistData();
 
-                //if (!IsScanning) 
                 Scan();
                 Advertise();
+            } catch (Exception err) {
+                //TODO: show/log exception
+            }
+            return true;
+        }
+        private bool LongTick() {
+            try {
+                _foreignData.PrunePersistedData();
+                // TODO: Automatically download
             } catch (Exception err) {
                 //TODO: show/log exception
             }
@@ -69,7 +81,8 @@ namespace CoronaBuster.Services {
         private void KeyReceived(byte[] foreignKey, uint id, int rssi, int txPower) {
             try {
                 // TODO: rate limit new keys to prevent DoS attack
-                var record = _foreignData.StoreForeignData(id, foreignKey, _pair.privateKey, _pair.publicKey, rssi, txPower);
+                var pair = Crypto.GenerateKeyPair();
+                var record = _foreignData.StoreForeignData(id, foreignKey, pair.privateKey, pair.publicKey, rssi, txPower);
                 if (record != null) {
                     LastScannedKey = $"@{DateTime.Now}: {record.MinimumPathLoss} - {Convert.ToBase64String(foreignKey)}";
                 }

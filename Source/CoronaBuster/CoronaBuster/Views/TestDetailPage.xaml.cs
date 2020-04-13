@@ -22,11 +22,11 @@ namespace CoronaBuster.Views {
         public TestDetailPage() {
             InitializeComponent();
 
-            var item = new Hit(
+            var item = new Contact(
                     new PublicRecord(
                         new ForeignRecord(1, "1234", 1981, -50, 5, TimeSpan.FromDays(90)), TimeSpan.FromDays(120)
                         ),
-                    new Services.LocalData.LocalKey(1, new byte[] { 5, 6, 7, 8 }, TimeSpan.FromDays(90))
+                    new LocalRecord(1, new byte[] { 5, 6, 7, 8 }, TimeSpan.FromDays(90))
                 );
 
             viewModel = new TestDetailViewModel(item);

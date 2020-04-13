@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -14,15 +15,17 @@ namespace CoronaBuster.Services {
         private HttpClient _client = new HttpClient();
 
         public async Task<bool> Report() {
-            _foreignData.Prune();
-            return await Upload();
+            IEnumerable<ForeignRecord> foreignRecords = ForeignData.ReadAllValidForeignRecords();
+
+            var publicRecords = foreignRecords
+                                    .Select(r => new PublicRecordBase(r))
+                                    .ToArray();
+
+            return await Upload(publicRecords);
         }
 
-        public async Task<bool> Upload() {
+        private async Task<bool> Upload(PublicRecordBase[] publicRecords) {
             var uri = new Uri(string.Format(Constants.UploadUrl, string.Empty));
-
-            var publicRecords = _foreignData.Records.Select(r => new PublicRecordBase(r)).ToArray();
-
             //TODO: must upload smarter in a real app, can be a lot of data so binary would be better and upload in multiple chunks
             //TODO: upload chunks over longer time with random delays so that chunks cannot be grouped based on publication date
             //TODO: handle retries in case of a problem
