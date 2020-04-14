@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using CoronaBuster.Models;
@@ -38,9 +40,12 @@ namespace CoronaBuster.Services {
 
         public IEnumerable<(PublicRecord publicRecord, LocalRecord localRecord)> FindContacts(IEnumerable<PublicRecord> data) {
             return data
-                .SelectMany(r => _localData.LocalKeyLookup[r.Id]
-                .Where(lk => IsMatch(r, lk))
-                .Select(lk => (r, lk)));
+                .SelectMany(r => 
+                    (_localData.LocalKeyLookup.TryGetValue(r.Id, out var value) ? value : Enumerable.Empty<LocalRecord>())
+                        .Where(lk => IsMatch(r, lk))
+                        .Select(lk => (r, lk)
+                        )
+                    );
         }
 
         private static bool IsMatch(PublicRecord r, LocalRecord lk) => Crypto.Hash(Crypto.GetSharedSecret(lk.PrivateKey, Convert.FromBase64String(r.PublicKey)), r.Id) == r.SharedSecret;
@@ -52,14 +57,14 @@ namespace CoronaBuster.Services {
             }
 
             try {
-                var newHits = 0;
+                var newContacts = 0;
 
                 foreach (var id in _localData.GetIds()) {
-                    var publicRecords = await Download(id);
+                    var (publicRecords, newOffset) = await Download(id);
                     var contacts = FindContacts(publicRecords).ToList();
-                    if (publicRecords.Any()) _lastPublicationTime[id] = publicRecords.Max(r => r.PublicationDate.Ticks); // store time so that we don't need to download the older records again
-                    newHits += contacts.Count;
+                    newContacts += contacts.Count;
                     contacts.ForEach(h => ContactFound?.Invoke(new Contact(h.publicRecord, h.localRecord)));
+                    _lastPublicationTime[id] = newOffset;
                 }
 
                 try {
@@ -71,25 +76,35 @@ namespace CoronaBuster.Services {
                     // TODO: log exception and inform user
                 }
 
-                return newHits;
+                return newContacts;
             } finally {
                 _isBusy = false;
             }
         }
 
-        public async Task<IEnumerable<PublicRecord>> Download(uint id) {
+        public async Task<(IEnumerable<PublicRecord> records, long newOffset)> Download(uint id) {
 
             if (!_lastPublicationTime.TryGetValue(id, out var lastKnownPublication)) lastKnownPublication = 0;
 
             var uri = new Uri(string.Format(Constants.DownloadUrl, id, lastKnownPublication));
-            
-            var response = await _client.GetAsync(uri);
+
+            var client = new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip });
+            var request = new HttpRequestMessage { RequestUri = uri };
+            request.Headers.Range = new RangeHeaderValue(lastKnownPublication, null);
+
+            Console.WriteLine(request.Headers.Range.Ranges);
+            var response = await client.SendAsync(request);
+
+            //var response = await _client.GetAsync(uri);
             if (response.IsSuccessStatusCode) {
-                var content = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<IEnumerable<PublicRecord>>(content);
+                var content = await response.Content.ReadAsStreamAsync();
+                // TODO: check if header has To field
+                var contentRange = response.Content.Headers.ContentRange;
+                var end = contentRange.To;
+                if (contentRange.From != contentRange.To) return (ProtoBuf.Serializer.DeserializeItems<PublicRecord>(content, ProtoBuf.PrefixStyle.Base128, 0), end.Value + 1);
             }
 
-            return Enumerable.Empty<PublicRecord>();
+            return (Enumerable.Empty<PublicRecord>(), lastKnownPublication);
         }
 
     }

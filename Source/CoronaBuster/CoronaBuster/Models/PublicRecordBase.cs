@@ -9,12 +9,12 @@ namespace CoronaBuster.Models {
     [ProtoInclude(201, typeof(ForeignRecord))]
     public class PublicRecordBase {
         [ProtoMember(1)] public uint Id { get; set; }
-        [ProtoMember(2)] public string PublicKey { get; set; }
+        [ProtoMember(2)] public string PublicKey { get; set; }    //TODO: change back to bytes for smaller protobuf messages
         [ProtoMember(3)] public uint SharedSecret { get; set; }
-        [ProtoMember(4)] public int Rssi { get; set; }
-        [ProtoMember(5)] public int TxPower { get; set; }
-        [ProtoMember(6)] public int MinimumPathLoss { get; set; }
-        [ProtoMember(7)] public int DurationSeconds { get; set; }
+        [ProtoMember(4)] public int Rssi { get; set; }            // TODO: change to sbyte/short
+        [ProtoMember(5)] public int TxPower { get; set; }         // TODO: change to sbyte
+        [ProtoMember(6)] public int MinimumPathLoss { get; set; } // TODO: change to short
+        [ProtoMember(7)] public int DurationSeconds { get; set; } // TODO: change to short
 
         public PublicRecordBase() { }
 

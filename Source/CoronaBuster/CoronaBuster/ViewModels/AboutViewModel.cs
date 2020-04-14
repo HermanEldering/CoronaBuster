@@ -45,7 +45,7 @@ namespace CoronaBuster.ViewModels {
                 IsDownloading = true;
                 DownloadStatus = "Downloading...";
                 var result = await PublicData.DownloadAndCheck();
-                DownloadStatus = result != 0 ? $"Found {result} new hits @{DateTime.Now.TimeOfDay}" : $"No new hits found @{DateTime.Now.TimeOfDay}";
+                DownloadStatus = result != 0 ? $"Found {result} new contacts @{DateTime.Now.TimeOfDay}" : $"No new contacts found @{DateTime.Now.TimeOfDay}";
             } catch (Exception err) {
                 DownloadStatus = $"Error while downloading: {err}";
             } finally {

@@ -17,7 +17,7 @@ namespace CoronaBuster.ViewModels {
 
         public TestViewModel() {
             Title = "Connections";
-            DataStore.Contacts.CollectionChanged += Hits_CollectionChanged;
+            DataStore.Contacts.CollectionChanged += Contacts_CollectionChanged;
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
             //MessagingCenter.Subscribe<NewItemPage, Item>(this, "AddItem", async (obj, item) => {
@@ -27,7 +27,7 @@ namespace CoronaBuster.ViewModels {
             //});
         }
 
-        private void Hits_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) => ExecuteLoadItemsCommand();
+        private void Contacts_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) => ExecuteLoadItemsCommand();
 
         async Task ExecuteLoadItemsCommand() {
             if (IsBusy)

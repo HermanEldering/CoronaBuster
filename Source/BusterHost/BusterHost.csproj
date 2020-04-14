@@ -8,5 +8,9 @@
     <ProjectReference Include="..\CoronaBuster\CoronaBuster\CoronaBuster.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="cache\" />
+  </ItemGroup>
+
 
 </Project>

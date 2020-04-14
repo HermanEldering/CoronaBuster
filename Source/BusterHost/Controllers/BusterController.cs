@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CoronaBuster.Models;
 using CoronaBuster.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+
+using IOFile = System.IO.File;
 
 namespace BusterHost.Controllers {
     [ApiController]
@@ -36,10 +40,51 @@ namespace BusterHost.Controllers {
         }
 
         [HttpPost]
-        public void Post([FromBody]PublicRecordBase[] records) {
-            _logger.LogInformation($"POST -> {records.Length} + {_cache.Count}");
+        [DisableFormValueModelBinding]
+        public async Task<IActionResult> Post() {
+            var filename = Path.GetRandomFileName();
+            try {
+                _logger.LogInformation($"POST");
 
-            lock(_lock) _cache.AddRange(records);
+
+                using (var file = new FileStream(filename, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None)) {
+                    await Request.Body.CopyToAsync(file);
+                    //var reader = new MultipartReader(boundary, HttpContext.Request.Body);
+
+                    //var section = await reader.ReadNextSectionAsync();
+
+                    _logger.LogInformation($"POST: file written {file.Position / 1024f} KB");
+
+                    file.Position = 0;
+                    var problem = ProtoBuf.Serializer.DeserializeItems<PublicRecordBase>(file, ProtoBuf.PrefixStyle.Base128, 0)
+                                                     .Where(r => r.PublicKey.Length < 10 && r.PublicKey.Length > 100)
+                                                     .Any();
+
+                    if (problem) {
+                        _logger.LogInformation($"POST: Problem");
+                        ModelState.AddModelError("File", "Failed to handle request.");
+                        return BadRequest(ModelState);
+                    }
+                }
+
+                _logger.LogInformation($"POST: VERIFIED");
+
+                Directory.CreateDirectory("cache");
+                IOFile.Move(filename, Path.Combine("cache", filename));
+
+                _logger.LogInformation($"POST: SUCCESS");
+
+                return new OkResult();
+            } catch (Exception err) {
+
+                _logger.LogError(err, $"POST: Exception");
+
+                if (IOFile.Exists(filename)) IOFile.Delete(filename);
+
+
+                ModelState.AddModelError("Post", "Server error.");
+                return BadRequest(ModelState);
+            }
         }
 
         // TODO: in production this should be done on a longer time scale for privacy, for instance every hour

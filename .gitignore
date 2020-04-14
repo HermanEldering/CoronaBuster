@@ -3,3 +3,6 @@
 **/bin/
 **/obj/
 *.user
+Source/BusterHost/cache/**
+Source/BusterHost/interim/**
+Source/BusterHost/wwwroot/public/**

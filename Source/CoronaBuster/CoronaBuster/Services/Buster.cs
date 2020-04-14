@@ -36,8 +36,14 @@ namespace CoronaBuster.Services {
         ForeignData _foreignData = DependencyService.Get<ForeignData>();
 
         //(byte[] publicKey, byte[] privateKey) _pair;
+        private uint[] _idPool;
 
         public Buster() {
+            _idPool = new uint[20];
+            for (int i = 0; i < _idPool.Length; i++) {
+                _idPool[i] = (uint)Random.Next(100_000);
+            }
+
             Bluetooth.KeyReceived += KeyReceived;
             Bluetooth.Advertising += StartedAdvertising;
 
@@ -108,7 +114,7 @@ namespace CoronaBuster.Services {
         public void Advertise() {
             var pair = Crypto.GenerateKeyPair();
             //TODO: generate id's in a way that they can easily be clustered
-            var id = (uint)Random.Next(100000); // random number, but not too large because we prefer collisions
+            var id = _idPool[Random.Next() % _idPool.Length]; // random number, but not too large because we prefer collisions
 
             _localData.StoreLocalKey(id, pair.privateKey);
             Bluetooth.Advertise(pair.publicKey, id);
