@@ -38,7 +38,6 @@ namespace BusterHost {
             app.UseStaticFiles(new StaticFileOptions {
                 ServeUnknownFileTypes = true
             });
-            //app.UseFileServer(true);
 
             app.UseRouting();
 
@@ -47,11 +46,6 @@ namespace BusterHost {
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
             });
-
-            //app.MapWhen(context => {
-            //    var path = context.Request.Path.Value;
-            //    return path.StartsWith("/public", StringComparison.OrdinalIgnoreCase);
-            //}, config => config.UseStaticFiles());
         }
     }
 }

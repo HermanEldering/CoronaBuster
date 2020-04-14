@@ -8,7 +8,7 @@ using static System.Math;
 
 namespace CoronaBuster.Services {
     public class LocalData {
-        public static readonly TimeSpan MEMORY_SPAN = TimeSpan.FromDays(21); // store a bit longer than foreign data in case there is a delay in checking
+        
 
         public List<LocalRecord> LocalKeys { get; private set; } = new List<LocalRecord>();
         public Dictionary<uint, List<LocalRecord>> LocalKeyLookup { get; private set; } = new Dictionary<uint, List<LocalRecord>>();
@@ -53,7 +53,7 @@ namespace CoronaBuster.Services {
         public void Prune() {
             lock (_lock) {
                 // find first relevant key
-                var cutoff = Helpers.GetExactTime() - MEMORY_SPAN;
+                var cutoff = Helpers.GetExactTime() - Constants.LOCAL_RECORD_MEMORY;
                 int i = 0;
                 for (; i < LocalKeys.Count; i++) {
                     if (LocalKeys[i].Time > cutoff) break;

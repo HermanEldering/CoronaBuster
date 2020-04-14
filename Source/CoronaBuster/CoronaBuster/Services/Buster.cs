@@ -7,8 +7,6 @@ using Xamarin.Forms;
 
 namespace CoronaBuster.Services {
     public class Buster: ViewModels.BaseViewModel {
-        public static readonly TimeSpan KEY_REGENERATION_INTERVAL = TimeSpan.FromMinutes(0.5);
-        public static readonly TimeSpan LONG_INTERVAL = TimeSpan.FromHours(2);
 
         public static SecureRandom Random { get; } = new SecureRandom();
 
@@ -49,8 +47,8 @@ namespace CoronaBuster.Services {
 
             ShortTick();
 
-            Device.StartTimer(KEY_REGENERATION_INTERVAL, ShortTick);
-            Device.StartTimer(LONG_INTERVAL, LongTick);
+            Device.StartTimer(Constants.KEY_REGENERATION_INTERVAL, ShortTick);
+            Device.StartTimer(Constants.LONG_INTERVAL, LongTick);
         }
 
         private bool ShortTick() {

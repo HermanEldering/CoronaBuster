@@ -1,3 +1,4 @@
+TODO:
 - Encrypt data stored in files.
 - Prevent out of disk space errors. (pre-allocate files?)
 
@@ -9,3 +10,7 @@
 - Check if bluetooth is enabled
 - Wait with download until on wifi
 - Make sure files remain open
+
+Reminders:
+- Production server needs valid https certificate
+- Production version needs valid manufacturer ID for bluetooth

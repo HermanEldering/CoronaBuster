@@ -99,38 +99,7 @@ namespace CoronaBuster.Droid {
             && packet[index + 2] == (BluetoothImpl.MANUFACTURER_ID & 0xFF);
 
         private void ScanHandler(ScanResult result, ScanFailure failureCode) {
-            if (failureCode == 0 && result != null) {
-                var (key, id) = DecodeScanResult(result);
-                KeyReceived?.Invoke(key, id, -1, -1);
-            }
-        }
-
-        private (byte[] key, uint id) DecodeScanResult(ScanResult result) {
-            try {
-                if (result.DataStatus != DataStatus.Complete) return default;
-            } catch (Java.Lang.NoSuchMethodError) { }
-
-#warning store transmit power and rssi
-            //result.TxPower;
-            //result.Rssi
-            var jclass = Java.Lang.Class.ForName("coronabuster.android.jni.BleDataExtractor");
-            var jmethod = jclass.GetMethod("Extract", new Java.Lang.Class[] { result.Class });
-            var jresult = (System.Collections.IList)(JavaList)jmethod.Invoke(null, new Java.Lang.Object[] { result });
-            //var jlist = (JavaList)jresult;
-            //var list = (IList<byte>)jresult;
-            var item0 = jresult.Count > 0 ? jresult[0] : null; 
-            var array = item0 == null ? null : JavaArray<byte>.FromJniHandle(((Java.Lang.Object)item0).Handle, JniHandleOwnership.DoNotTransfer);
-            var net = (byte[])array;
-            //var bytes = (byte[])((System.Collections.IList)jresult)[0];
-
-            var data = result.ScanRecord.GetManufacturerSpecificData(BluetoothImpl.MANUFACTURER_ID);
-            if (data == null || data.Length < 45 || data[0] != VERSION_NUMBER) return data != null ? (new byte[] { (byte)data.Length, data[0] }, (uint)0xFFFF) : default;
-
-            var key = new byte[40];
-            Array.Copy(data, 1, key, 0, 40);
-            var id = BitConverter.ToUInt32(data, 41);
-
-            return (key, id);
+            // obsolete
         }
     }
 }
